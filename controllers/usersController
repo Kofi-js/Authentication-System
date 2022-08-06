@@ -10,75 +10,48 @@ const { SECRET, EMAIL, PASS } = process.env;
 //  @route          POST api/auth/register
 // @desc            Register user and get token
 // @access          Public
-exports.registerUser = async (req, res) => {
-  // check for errors
-  const errors = validationResult(req);
-  if (!errors.isEmpty())
-    return res.status(400).json({ errors: errors.array() });
+const Register = async(req,res)=>{
+    // destructure request body
+    const { firstName,lastName ,email,password} = req.body;
 
-  // destructure request body
-  const { firstName, lastName, email, password } = req.body;
-
-  try {
-    // check if useer exist
-    let existingUser = await User.findOne({ email });
-
-    if (existingUser)
-      return res
-        .status(400)
-        .json({ statusCode: 400, message: "User already exists!" });
-
-    // else ...
-    // hash user password
-    const salt = await bcrypt.genSalt(10);
-
-    const hashedPassword = await bcrypt.hash(password, salt);
-    // create new user
-    const newUser = await User.create({
-      firstName: firstName,
-      lastName: lastName,
-      email: email,
-      password: hashedPassword,
-    });
-
-    jwt.sign(
-      {
-        id: newUser._id,
-        firstName: newUser.firstName,
-        lastName: newUser.lastName,
-        email: newUser.email,
-        userRole: newUser.userRole,
-        isAdmin: newUser.isAdmin,
-        isManager: newUser.isManager,
-        isStaff: newUser.isStaff,
-      },
-      SECRET,
-      {
-        expiresIn: 60, //3600
-      },
-      (err, token) => {
-        if (err) throw err;
-        res.json({
-          statusCode: 200,
-          message: "user created successfully",
-          user: {
-            firstName: newUser.firstName,
-            lastName: newUser.lastName,
-            email: newUser.email,
-            userRole: newUser.userRole,
-            isAdmin: newUser.isAdmin,
-            isManager: newUser.isManager,
-            isStaff: newUser.isStaff,
-          },
-          token,
-        });
+    if (!(email && password && first_name && last_name)) {
+        res.status(400).send("All input is required");
       }
-    );
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Server Error");
-  }
-};
+  
+     try {
+        let existingUser =await User.findOne({ email });
+
+        if(existingUser){
+            return res.status(400).json({statusCode:400,message:"user exists"})
+        };
+        const salt = await bcrypt.genSalt(10)
+        
+        const hashedPassword = await bcrypt.hash(password,salt);
+
+        const newUser = await User.create({
+            firstName: firstName,
+            lastName: lastName,
+            email: email,
+            password: hashedPassword,
+        });
+
+        // create token
+        const token = jwt.sign(
+            { user_id: newUser._id, email:newUser.email },
+            SECRET,
+            {
+              expiresIn: "2h",
+            });
+                        
+        newUser.token = token
+        
+        res.status(400).send("wrong token")
+     } catch (error) {
+        console.log(error.message);
+        res.status(402).send('Error')
+     }
+}
+
 
 // @route     GET   api/auth
 // @desc      Get logged in user
@@ -204,170 +177,4 @@ exports.logoutUser = async (req, res) => {
 // @route       PUT api/user/:user_id/update
 // @desc        update a registered user
 // @access      Private
-exports.updateUser = (req, res) => {
-  User.updateOne(
-    {
-      _id: req.params.user_id,
-    },
-    {
-      $set: {
-        userRole: req.body.userRole,
-        isAdmin: req.body.isAdmin,
-        isManager: req.body.isManager,
-        isStaff: req.body.isStaff,
-      },
-    }
-  ).then((data) => {
-    res
-      .status(201)
-      .json({ statusCode: 201, message: "Role assigned successfully", data });
-  });
-};
 
-// @route       DELETE api/user/:user_id/delete
-// @desc        Delete a reqistered user
-// @access      Private
-exports.deleteUser = (req, res) => {
-  User.deleteOne({
-    _id: req.params.user_id,
-  }).then(() => {
-    res.status(200).json({
-      statusCode: 200,
-      message: "user deleted successfully",
-    });
-  });
-};
-
-// @route       GET api/user/:user_id
-// @desc        Get a registered user
-// @access      Private
-exports.getUser = async (req, res) => {
-  try {
-    const user = await User.findOne({
-      _id: req.params.user_id,
-    }).select("-password");
-
-    res
-      .status(200)
-      .json({ statusCode: 200, message: "user fetched successfully" });
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Server Error");
-  }
-};
-
-// @route       GET api/users
-// @desc        Get all registered users
-// @access      Private
-exports.getAllUsers = async (req, res) => {
-  try {
-    const users = await User.find().select("-password");
-    res.status(200).json({ users });
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Server Error");
-  }
-};
-
-// @route           POST api/auth/recover-password
-// @desc            Recover password
-// @access          Public
-exports.recoverPassword = async (req, res) => {
-  // check for errors
-  const errors = validationResult(req);
-  if (!errors.isEmpty())
-    return res.status(400).json({ errors: errors.array() });
-
-  const { email } = req.body;
-  try {
-    const checkEmail = await User.findOne({ email });
-    if (!checkEmail)
-      return res.status(401).json({
-        statusCode: 401,
-        message: "invalid email",
-      });
-
-    const payload = {
-      user: {
-        id: checkEmail._id,
-      },
-    };
-
-    const token = jwt.sign(payload, SECRET, {
-      expiresIn: 3600,
-    });
-
-    const output = `
-            <h4>Change Password</h4>
-            <p>Kindly use the link below to change your password</p>
-            <p><a href="http://localhost:3500/api/auth/change-password?token=${token}">click here</a></p>
-        `;
-    let transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: EMAIL,
-        pass: PASS,
-      },
-    });
-
-    let mailOptions = {
-      from: "Dev Tester 👻 <devtestar101@gmail.com>",
-      to: email,
-      subject: "Password Recovery",
-      html: output,
-    };
-
-    transporter.sendMail(mailOptions);
-    res
-      .status(200)
-      .json({ statusCode: 200, message: "Recovery link sent successully" });
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Server Error");
-  }
-};
-
-// @route           PUT api/auth/change-password
-// @desc            User change password
-// @access          Public
-exports.changePassword = async (req, res) => {
-  // check if request has token
-  const token = req.query.token;
-  if (!token)
-    return res
-      .status(401)
-      .json({ statusCode: 401, message: "invalid request" });
-
-  // check if user id is in token
-  const decoded = jwt.verify(token, SECRET);
-  const user_id = decoded.user.id;
-  if (!user_id)
-    return res
-      .status(401)
-      .json({ statusCode: 401, message: "invalid request" });
-
-  try {
-    const salt = await bcrypt.genSalt(10);
-    const password = req.body.password;
-    const hashPassword = await bcrypt.hash(password, salt);
-
-    const updateUserPassword = await User.updateOne(
-      {
-        _id: user_id,
-      },
-      {
-        $set: {
-          password: hashPassword,
-        },
-      }
-    );
-
-    res.status(201).json({
-      statusCode: 201,
-      message: "Password updated successfully. Login with new credentials",
-    });
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Server Error");
-  }
-};
