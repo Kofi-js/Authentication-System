@@ -78,7 +78,7 @@ router.get(
 
 // get all users
 router.get(
-  "/api/users",
+  "/api/users/:id",
   authenticateUser,
   checkIfStaff,
   checkIfManager,
@@ -86,4 +86,4 @@ router.get(
   usersController.getAllUsers
 );
 
-module.exports = router();
+module.exports = router;
