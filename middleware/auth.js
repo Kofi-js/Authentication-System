@@ -5,10 +5,10 @@ const { SECRET } = process.env;
 
 exports.authenticateUser = (req, res, next) => {
   // get token from header
-  const authorization_token = req.header("Authorization"); // or Authorization //x-auth-token
+  const token = req.header("Authorization"); // or Authorization //x-auth-token
 
   // check if tokeen doesn't exist
-  if (!authorization_token)
+  if (!token)
     return res.status(401).json({
       statusCode: 401,
       message: "No token, authorization denied!",

@@ -20,7 +20,7 @@ exports.registerUser = async (req, res) => {
   const { firstName, lastName, email, password } = req.body;
 
   try {
-    // check if useer exist
+    // check if user exist
     let existingUser = await User.findOne({ email });
 
     if (existingUser)
@@ -300,7 +300,7 @@ exports.recoverPassword = async (req, res) => {
     const output = `
             <h4>Change Password</h4>
             <p>Kindly use the link below to change your password</p>
-            <p><a href="http://localhost:3500/api/auth/change-password?token=${token}">click here</a></p>
+            <p><a href="http://localhost:3000/api/auth/change-password?token=${token}">click here</a></p>
         `;
     let transporter = nodemailer.createTransport({
       service: "gmail",

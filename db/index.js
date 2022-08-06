@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const { connected } = require("process");
 require("dotenv").config;
 const { MONGO_URI } = process.env;
 
