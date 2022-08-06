@@ -4,49 +4,50 @@ const bcrypt = require("bcryptjs");
 require("dotenv").config();
 const { SECRET } = process.env;
 
-async function Register (req,res){
-    // destructure request body
-    const { firstName,lastName ,email,password} = req.body;
-
-    if (!(email && password && first_name && last_name)) {
-        res.status(400).send("All input is required");
-      }
-  
-     try {
-        let existingUser =await User.findOne({ email });
-
-        if(existingUser){
-            return res.status(400).json({statusCode:400,message:"user exists"})
-        };
-        const salt = await bcrypt.genSalt(10)
-        
-        const hashedPassword = await bcrypt.hash(password,salt);
-
-        const newUser = await User.create({
-            firstName: firstName,
-            lastName: lastName,
-            email: email,
-            password: hashedPassword,
-        });
-
-        // create token
-        const token = jwt.sign(
-            { user_id: newUser._id, email:newUser.email,isAdmin:user.isAdmin, isStaff:user.isStaff, isManager:user.isManager},
-            SECRET,
-            {
-              expiresIn: "2h",
+async function Register(req,res){
+        // destructure request body
+        const { firstName,lastName ,email,password} = req.body;
+    
+        if (!(email && password && firstName && lastName)) {
+            res.status(400).send("All input is required");
+          }
+      
+         try {
+            let existingUser =await User.findOne({ email });
+    
+            if(existingUser){
+                return res.status(400).json({statusCode:400,message:"user exists"})
+            };
+            const salt = await bcrypt.genSalt(10)
+            
+            const hashedPassword = await bcrypt.hash(password,salt);
+    
+            const newUser = await User.create({
+                firstName: firstName,
+                lastName: lastName,
+                email: email,
+                password: hashedPassword,
             });
-                        
-        newUser.token = token
-        
-        res.status(400).send("wrong token")
-     } catch (error) {
-        console.log(error.message);
-        res.status(402).send('Error')
-     }
+    
+            // create token
+            const token = jwt.sign(
+                { user_id: newUser._id, email:newUser.email,isAdmin:newUser.isAdmin, isStaff:ser.isStaff, isManager:user.isManager},
+                SECRET,
+                {
+                  expiresIn: "2h",
+                });
+                            
+            newUser.token = token
+            
+            res.status(400).send("wrong token")
+         } catch (error) {
+            console.log(error.message);
+            res.status(402).send('Error')
+         }
 }
 
-async function login  (req,res) {
+
+const login= async  (req,res) => {
     try {
         // Get user input
         const { email, password } = req.body;
@@ -77,7 +78,7 @@ async function login  (req,res) {
       }
 }
 
-async function logout(req,res){
+const logout = async (req,res)=>{
   let splittedHeader = req.header("Authorization").split(" ");
   if (splittedHeader[0] !== "Bearer")
     return res.status(401).json({
@@ -95,5 +96,5 @@ async function logout(req,res){
   });
 }
 
-module.exports = {Register,login,logout};
+module = {Register,login,logout};
 
