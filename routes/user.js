@@ -8,10 +8,10 @@ const {
   checkIfStaff,
 } = require("../middleware/auth");
 
-// Import the router controller
+// import users controller
 const usersController = require("../controllers/usersController");
 
-// register user
+// register user route
 router.post(
   "/api/auth/register",
   [
@@ -23,14 +23,14 @@ router.post(
   usersController.registerUser
 );
 
-// User Login route
+// login user route
 router.post(
-  "api/auth/login",
+  "/api/auth/login",
   [
     check("email", "Please enter a valid email").isEmail(),
     check("password", "A valid password is required").exists(),
   ],
-  usersController.loginUsers
+  usersController.loginUser
 );
 
 // recover user password
@@ -78,7 +78,7 @@ router.get(
 
 // get all users
 router.get(
-  "/api/users/:id",
+  "/api/users",
   authenticateUser,
   checkIfStaff,
   checkIfManager,
