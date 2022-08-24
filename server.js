@@ -13,7 +13,7 @@ const app = express();
 
 //seeders
 const { seedAdmin } = require("./seeder/admin");
-console.log(seedAdmin());
+// console.log("new admin created successfully", seedAdmin());
 
 app.use(json());
 

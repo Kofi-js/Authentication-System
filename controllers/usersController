@@ -305,8 +305,12 @@ exports.recoverPassword = async (req, res) => {
     let transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
+        type: "OAuth2",
         user: EMAIL,
         pass: PASS,
+        clientId: process.env.CLIENTID,
+        clientSecret: process.env.CSECRET,
+        refreshToken: process.env.REFRESH_TOKEN,
       },
     });
 
