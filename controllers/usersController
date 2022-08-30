@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const nodemailer = require("nodemailer");
 const { decode } = require("jsonwebtoken");
+const { response } = require("express");
 require("dotenv").config();
 const { SECRET } = process.env;
 
@@ -300,20 +301,26 @@ exports.recoverPassword = async (req, res) => {
     const output = `
             <h4>Change Password</h4>
             <p>Kindly use the link below to change your password</p>
-            <p><a href="http://localhost:3500/api/auth/change-password?token=${token}">click here</a></p>
+            <p><a href="http://localhost:3000/api/auth/change-password?token=${token}">click here</a></p>
         `;
+    // let transporter = nodemailer.createTransport({
+    //   service: "gmail",
+    //   auth: {
+    //     type: "OAuth2",
+    //     user: process.env.MAIL_USERNAME,
+    //     pass: process.env.MAIL_PASSWORD,
+    //     clientId: process.env.OAUTH_CLIENTID,
+    //     clientSecret: process.env.OAUTH_CLIENT_SECRET,
+    //     refreshToken: process.env.OAUTH_REFRESH_TOKEN,
+    //   },
+    // });
     let transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        type: "OAuth2",
-        user: process.env.MAIL_USERNAME,
-        pass: process.env.MAIL_PASSWORD,
-        clientId: process.env.OAUTH_CLIENTID,
-        clientSecret: process.env.OAUTH_CLIENT_SECRET,
-        refreshToken: process.env.OAUTH_REFRESH_TOKEN,
+        user: process.env.user,
+        pass: process.env.pass,
       },
     });
-
     let mailOptions = {
       from: "Dev Tester 👻 <devtestar101@gmail.com>",
       to: email,
@@ -321,10 +328,13 @@ exports.recoverPassword = async (req, res) => {
       html: output,
     };
 
-    transporter.sendMail(mailOptions);
-    res
-      .status(200)
-      .json({ statusCode: 200, message: "Recovery link sent successully" });
+    transporter.sendMail(mailOptions, (err, info) => {
+      console.log(info);
+      res
+        .send(info.envelope.to[0])
+        .status(200)
+        .json({ statusCode: 200, message: "Recovery link sent successully" });
+    });
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server Error");
