@@ -5,7 +5,7 @@ const bcrypt = require("bcryptjs");
 const nodemailer = require("nodemailer");
 const { decode } = require("jsonwebtoken");
 require("dotenv").config();
-const { SECRET, EMAIL, PASS } = process.env;
+const { SECRET } = process.env;
 
 //  @route          POST api/auth/register
 // @desc            Register user and get token
@@ -306,11 +306,11 @@ exports.recoverPassword = async (req, res) => {
       service: "gmail",
       auth: {
         type: "OAuth2",
-        user: EMAIL,
-        pass: PASS,
-        clientId: process.env.CLIENTID,
-        clientSecret: process.env.CSECRET,
-        refreshToken: process.env.REFRESH_TOKEN,
+        user: process.env.MAIL_USERNAME,
+        pass: process.env.MAIL_PASSWORD,
+        clientId: process.env.OAUTH_CLIENTID,
+        clientSecret: process.env.OAUTH_CLIENT_SECRET,
+        refreshToken: process.env.OAUTH_REFRESH_TOKEN,
       },
     });
 
