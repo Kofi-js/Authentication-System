@@ -303,17 +303,6 @@ exports.recoverPassword = async (req, res) => {
             <p>Kindly use the link below to change your password</p>
             <p><a href="http://localhost:3000/api/auth/change-password?token=${token}">click here</a></p>
         `;
-    // let transporter = nodemailer.createTransport({
-    //   service: "gmail",
-    //   auth: {
-    //     type: "OAuth2",
-    //     user: process.env.MAIL_USERNAME,
-    //     pass: process.env.MAIL_PASSWORD,
-    //     clientId: process.env.OAUTH_CLIENTID,
-    //     clientSecret: process.env.OAUTH_CLIENT_SECRET,
-    //     refreshToken: process.env.OAUTH_REFRESH_TOKEN,
-    //   },
-    // });
     let transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
