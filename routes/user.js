@@ -1,89 +1,91 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const { check } = require("express-validator");
+const { check } = require('express-validator');
 const {
   authenticateUser,
   checkIfAdmin,
   checkIfManager,
   checkIfStaff,
-} = require("../middleware/auth");
+} = require('../middleware/auth');
 
 // import users controller
-const usersController = require("../controllers/usersController");
+const usersController = require('../controllers/usersController');
+const { urlencoded } = require('body-parser');
 
 // register user route
 router.post(
-  "/api/auth/register",
+  '/api/auth/register',
+  urlencoded,
   [
-    check("firstName", "first name is required").exists(),
-    check("lastName", "last name is required").exists(),
-    check("email", "Please enter a valid email").isEmail(),
-    check("password", "A valid password is required").exists(),
+    check('firstName', 'first name is required').exists(),
+    check('lastName', 'last name is required').exists(),
+    check('email', 'Please enter a valid email').isEmail(),
+    check('password', 'A valid password is required').exists(),
   ],
-  usersController.registerUser
+  usersController.registerUser,
 );
 
 // login user route
 router.post(
-  "/api/auth/login",
+  '/api/auth/login',
   [
-    check("email", "Please enter a valid email").isEmail(),
-    check("password", "A valid password is required").exists(),
+    check('email', 'Please enter a valid email').isEmail(),
+    check('password', 'A valid password is required').exists(),
   ],
-  usersController.loginUser
+  usersController.loginUser,
 );
 
 // recover user password
 router.post(
-  "/api/auth/recover-password",
-  [check("email", "Please enter a valid email").isEmail()],
-  usersController.recoverPassword
+  '/api/auth/recover-password',
+  [check('email', 'Please enter a valid email').isEmail()],
+  usersController.recoverPassword,
 );
 
 // accept password change
-router.put("/api/auth/change-password?", usersController.changePassword);
+router.put('/api/auth/change-password?', usersController.changePassword);
 
 // get logged in  user
-router.get("/api/auth", authenticateUser, usersController.getLoggedInUser);
+router.get('/api/auth', authenticateUser, usersController.getLoggedInUser);
 
 // logout user
-router.put("/api/auth/logout", authenticateUser, usersController.logoutUser);
+router.put('/api/auth/logout', authenticateUser, usersController.logoutUser);
 
 //update user
 router.put(
-  "/api/user/:user_id/update",
+  '/api/user/:user_id/update',
   authenticateUser,
   checkIfManager,
   checkIfAdmin,
-  usersController.updateUser
+  usersController.updateUser,
 );
 
 // delete user
 router.delete(
-  "/api/user/:user_id/delete",
+  '/api/user/:user_id/delete',
   authenticateUser,
   checkIfAdmin,
-  usersController.deleteUser
+  usersController.deleteUser,
 );
 
 // get one user
 router.get(
-  "/api/user/:user_id",
+  '/api/user/:user_id',
   authenticateUser,
   checkIfStaff,
   checkIfManager,
   checkIfAdmin,
-  usersController.getUser
+  usersController.getUser,
 );
 
 // get all users
 router.get(
-  "/api/users",
+  '/api/users',
   authenticateUser,
   checkIfStaff,
   checkIfManager,
   checkIfAdmin,
-  usersController.getAllUsers
+  usersController.getAllUsers,
 );
 
 module.exports = router;

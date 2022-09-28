@@ -1,11 +1,12 @@
-const User = require("../models/User");
-const { validationResult } = require("express-validator");
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcryptjs");
-const nodemailer = require("nodemailer");
-const { decode } = require("jsonwebtoken");
-const { response } = require("express");
-require("dotenv").config();
+const User = require('../models/User');
+const { validationResult } = require('express-validator');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const bodyParser = require('body-parser');
+const nodemailer = require('nodemailer');
+const { decode } = require('jsonwebtoken');
+const { response } = require('express');
+require('dotenv').config();
 const { SECRET } = process.env;
 
 //  @route          POST api/auth/register
@@ -18,6 +19,7 @@ exports.registerUser = async (req, res) => {
     return res.status(400).json({ errors: errors.array() });
 
   // destructure request body
+
   const { firstName, lastName, email, password } = req.body;
 
   try {
@@ -27,7 +29,7 @@ exports.registerUser = async (req, res) => {
     if (existingUser)
       return res
         .status(400)
-        .json({ statusCode: 400, message: "User already exists!" });
+        .json({ statusCode: 400, message: 'User already exists!' });
 
     // else ...
     // hash user password
@@ -61,7 +63,7 @@ exports.registerUser = async (req, res) => {
         if (err) throw err;
         res.json({
           statusCode: 200,
-          message: "user created successfully",
+          message: 'user created successfully',
           user: {
             firstName: newUser.firstName,
             lastName: newUser.lastName,
@@ -73,11 +75,11 @@ exports.registerUser = async (req, res) => {
           },
           token,
         });
-      }
+      },
     );
   } catch (err) {
     console.error(err.message);
-    res.status(500).send("Server Error");
+    res.status(500).send('Server Error');
   }
 };
 
@@ -87,17 +89,17 @@ exports.registerUser = async (req, res) => {
 exports.getLoggedInUser = async (req, res) => {
   try {
     // Get user from dbb
-    const user = await User.findById(req.user.id).select("-password");
+    const user = await User.findById(req.user.id).select('-password');
 
     // return user
     res.json({
       statusCode: 200,
-      message: "user gotten successfully",
+      message: 'user gotten successfully',
       user,
     });
   } catch (err) {
     console.error(err.message);
-    res.status(500).send("Server Error");
+    res.status(500).send('Server Error');
   }
 };
 
@@ -121,7 +123,7 @@ exports.loginUser = async (req, res) => {
     if (!user)
       return res.status(400).json({
         statusCode: 400,
-        message: "Invalid credentials",
+        message: 'Invalid credentials',
       });
 
     //else...
@@ -131,7 +133,7 @@ exports.loginUser = async (req, res) => {
     if (!isMatch)
       return res.status(400).json({
         statusCode: 400,
-        message: "Invalid credentials",
+        message: 'Invalid credentials',
       });
 
     // else
@@ -160,7 +162,7 @@ exports.loginUser = async (req, res) => {
         if (err) throw err;
         res.json({
           statusCode: 200,
-          message: "user logged in successfully",
+          message: 'user logged in successfully',
           user: {
             firstName: user.firstName,
             lastName: user.lastName,
@@ -172,11 +174,11 @@ exports.loginUser = async (req, res) => {
           },
           token,
         });
-      }
+      },
     );
   } catch (err) {
     console.error(err.message);
-    res.status(500).send("Server Error");
+    res.status(500).send('Server Error');
   }
 };
 
@@ -185,19 +187,19 @@ exports.loginUser = async (req, res) => {
 // @access    Private
 exports.logoutUser = async (req, res) => {
   // const authHeader = req.headers["Authorization"];
-  let splittedHeader = req.header("Authorization").split(" ");
-  if (splittedHeader[0] !== "Bearer")
+  let splittedHeader = req.header('Authorization').split(' ');
+  if (splittedHeader[0] !== 'Bearer')
     return res.status(401).json({
       statusCode: 401,
-      message: "authorization format is Bearer <token>",
+      message: 'authorization format is Bearer <token>',
     });
 
-  jwt.sign(splittedHeader[1], "", { expiresIn: 1 }, (logout, err) => {
+  jwt.sign(splittedHeader[1], '', { expiresIn: 1 }, (logout, err) => {
     if (logout) {
       console.log(logout);
-      res.send({ msg: "You have been Logged Out" });
+      res.send({ msg: 'You have been Logged Out' });
     } else {
-      res.send({ msg: "Error" });
+      res.send({ msg: 'Error' });
     }
   });
 };
@@ -217,11 +219,11 @@ exports.updateUser = (req, res) => {
         isManager: req.body.isManager,
         isStaff: req.body.isStaff,
       },
-    }
+    },
   ).then((data) => {
     res
       .status(201)
-      .json({ statusCode: 201, message: "Role assigned successfully", data });
+      .json({ statusCode: 201, message: 'Role assigned successfully', data });
   });
 };
 
@@ -234,7 +236,7 @@ exports.deleteUser = (req, res) => {
   }).then(() => {
     res.status(200).json({
       statusCode: 200,
-      message: "user deleted successfully",
+      message: 'user deleted successfully',
     });
   });
 };
@@ -246,14 +248,14 @@ exports.getUser = async (req, res) => {
   try {
     const user = await User.findOne({
       _id: req.params.user_id,
-    }).select("-password");
+    }).select('-password');
 
     res
       .status(200)
-      .json({ statusCode: 200, message: "user fetched successfully" });
+      .json({ statusCode: 200, message: 'user fetched successfully' });
   } catch (err) {
     console.error(err.message);
-    res.status(500).send("Server Error");
+    res.status(500).send('Server Error');
   }
 };
 
@@ -262,11 +264,11 @@ exports.getUser = async (req, res) => {
 // @access      Private
 exports.getAllUsers = async (req, res) => {
   try {
-    const users = await User.find().select("-password");
+    const users = await User.find().select('-password');
     res.status(200).json({ users });
   } catch (err) {
     console.error(err.message);
-    res.status(500).send("Server Error");
+    res.status(500).send('Server Error');
   }
 };
 
@@ -285,7 +287,7 @@ exports.recoverPassword = async (req, res) => {
     if (!checkEmail)
       return res.status(401).json({
         statusCode: 401,
-        message: "invalid email",
+        message: 'invalid email',
       });
 
     const payload = {
@@ -298,22 +300,21 @@ exports.recoverPassword = async (req, res) => {
       expiresIn: 3600,
     });
 
-    const output = `
-            <h4>Change Password</h4>
-            <p>Kindly use the link below to change your password</p>
-            <p><a href="http://localhost:3000/api/auth/change-password?token=${token}">click here</a></p>
-        `;
+    const output = ` <h4>Change Password</h4>
+    <p>Kindly use the link below to change your password</p>
+    <p><a href="http://localhost:3000/api/auth/change-password?token=${token}">click here</a></p>`;
+
     let transporter = nodemailer.createTransport({
-      service: "gmail",
+      service: 'gmail',
       auth: {
         user: process.env.user,
         pass: process.env.pass,
       },
     });
     let mailOptions = {
-      from: "Dev Tester 👻 <devtestar101@gmail.com>",
+      from: 'Dev Tester 👻 <devtestar101@gmail.com>',
       to: email,
-      subject: "Password Recovery",
+      subject: 'Password Recovery',
       html: output,
     };
 
@@ -322,11 +323,11 @@ exports.recoverPassword = async (req, res) => {
       res
         .send(info.envelope.to[0])
         .status(200)
-        .json({ statusCode: 200, message: "Recovery link sent successully" });
+        .json({ statusCode: 200, message: 'Recovery link sent successully' });
     });
   } catch (err) {
     console.error(err.message);
-    res.status(500).send("Server Error");
+    res.status(500).send('Server Error');
   }
 };
 
@@ -339,7 +340,7 @@ exports.changePassword = async (req, res) => {
   if (!token)
     return res
       .status(401)
-      .json({ statusCode: 401, message: "invalid request" });
+      .json({ statusCode: 401, message: 'invalid request' });
 
   // check if user id is in token
   const decoded = jwt.verify(token, SECRET);
@@ -347,7 +348,7 @@ exports.changePassword = async (req, res) => {
   if (!user_id)
     return res
       .status(401)
-      .json({ statusCode: 401, message: "invalid request" });
+      .json({ statusCode: 401, message: 'invalid request' });
 
   try {
     const salt = await bcrypt.genSalt(10);
@@ -362,15 +363,15 @@ exports.changePassword = async (req, res) => {
         $set: {
           password: hashPassword,
         },
-      }
+      },
     );
 
     res.status(201).json({
       statusCode: 201,
-      message: "Password updated successfully. Login with new credentials",
+      message: 'Password updated successfully. Login with new credentials',
     });
   } catch (err) {
     console.error(err.message);
-    res.status(500).send("Server Error");
+    res.status(500).send('Server Error');
   }
 };
